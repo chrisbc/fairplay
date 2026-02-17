@@ -10,6 +10,14 @@ class Format:
     type: str
     url: str
 
+    @property
+    def download_url(self) -> str:
+        """Return a massaged URL suitable for downloads."""
+        if self.type in ("pdf", "xml") and "/." in self.url:
+            # Replace last occurrence of '/.' with '.' for PDF/XML files
+            return self.url.rsplit("/.", 1)[0] + "." + self.type
+        return self.url
+
 
 @dataclass
 class MatchingVersion:

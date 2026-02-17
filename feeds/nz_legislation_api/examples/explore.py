@@ -47,7 +47,7 @@ def main() -> None:
             print(f"  Agencies: {', '.join(detail.administering_agencies)}")
             for fmt in detail.formats:
                 print(f"  Format:   {fmt.type} -> {fmt.url}")
-            print()
+                print(f"  Download: {fmt.type} -> {fmt.download_url}")
 
 
 if __name__ == "__main__":
