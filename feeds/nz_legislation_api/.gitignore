@@ -1,0 +1,3 @@
+downloads/**
+*.jsonl
+**/.DS_Store
