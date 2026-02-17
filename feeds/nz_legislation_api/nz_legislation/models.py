@@ -35,6 +35,18 @@ class MatchingVersion:
             formats=[Format(**f) for f in data.get("formats", [])],
         )
 
+    def to_dict(self) -> dict:
+        """Convert MatchingVersion object to dictionary."""
+        return {
+            "version_id": self.version_id,
+            "title": self.title,
+            "is_latest_version": self.is_latest_version,
+            "formats": [
+                {"type": f.type, "url": f.url, "download_url": f.download_url}
+                for f in self.formats
+            ],
+        }
+
 
 @dataclass
 class Work:
@@ -70,6 +82,26 @@ class Work:
             instrument_status=data.get("instrument_status"),
             instrument_classification=data.get("instrument_classification"),
         )
+
+    def to_dict(self) -> dict:
+        """Convert Work object to dictionary."""
+        return {
+            "work_id": self.work_id,
+            "legislation_type": self.legislation_type,
+            "legislation_status": self.legislation_status,
+            "administering_agencies": self.administering_agencies,
+            "latest_matching_version": self.latest_matching_version.to_dict()
+            if self.latest_matching_version
+            else None,
+            "act_type": self.act_type,
+            "act_status": self.act_status,
+            "act_classification": self.act_classification,
+            "bill_type": self.bill_type,
+            "bill_status": self.bill_status,
+            "instrument_type_group": self.instrument_type_group,
+            "instrument_status": self.instrument_status,
+            "instrument_classification": self.instrument_classification,
+        }
 
 
 @dataclass
@@ -124,6 +156,28 @@ class Version:
             instrument_status=data.get("instrument_status"),
             instrument_classification=data.get("instrument_classification"),
         )
+
+    def to_dict(self) -> dict:
+        """Convert Version object to dictionary."""
+        return {
+            "version_id": self.version_id,
+            "work_id": self.work_id,
+            "title": self.title,
+            "legislation_type": self.legislation_type,
+            "legislation_status": self.legislation_status,
+            "administering_agencies": self.administering_agencies,
+            "formats": [
+                {"type": f.type, "url": f.url, "download_url": f.download_url}
+                for f in self.formats
+            ],
+            "act_type": self.act_type,
+            "act_status": self.act_status,
+            "bill_type": self.bill_type,
+            "bill_status": self.bill_status,
+            "instrument_type_group": self.instrument_type_group,
+            "instrument_status": self.instrument_status,
+            "instrument_classification": self.instrument_classification,
+        }
 
 
 @dataclass

@@ -6,6 +6,8 @@ requires-python = ">=3.10"
 dependencies = [
     "httpx",
     "python-dotenv",
+    "typer",
+    "tqdm"
 ]
 
 [build-system]
