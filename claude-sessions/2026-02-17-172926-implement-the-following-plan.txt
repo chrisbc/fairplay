@@ -1,0 +1,324 @@
+
+╭─── Claude Code v2.1.44 ──────────────────────────────────────────────────────╮
+│                           │ Tips for getting started                         │
+│    Welcome back Chris!    │ Run /init to create a CLAUDE.md file with instr… │
+│                           │ ──────────────────────────────────────────────── │
+│          ▐▛███▜▌          │ Recent activity                                  │
+│         ▝▜█████▛▘         │ No recent activity                               │
+│           ▘▘ ▝▝           │                                                  │
+│                           │                                                  │
+│   Opus 4.6 · Claude Pro   │                                                  │
+│      ~/DEV/fairplay       │                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Plan to implement                                                            │
+│                                                                              │
+│ Plan: NZ Legislation API Python Client                                       │
+│                                                                              │
+│ Context                                                                      │
+│                                                                              │
+│ The feeds/nz_legislation_api/ directory currently has only a README and .env │
+│  file. We need to build a simple Python API client that wraps the four       │
+│ endpoints of the NZ Legislation API, plus provide example usage for          │
+│ interactive testing.                                                         │
+│                                                                              │
+│ API Endpoints to Wrap                                                        │
+│                                                                              │
+│ 1. Search Works — GET /v0/works/ (search/filter legislation)                 │
+│ 2. Get Versions of a Work — GET /v0/works/{work_id}/versions/                │
+│ 3. Get Version Details — GET /v0/versions/{version_id}/                      │
+│ 4. RSS Feed — GET /api/rss/works/{work_id}/versions/ (XML)                   │
+│                                                                              │
+│ Auth: api_key query param or X-Api-Key header. Rate limit: 10k/day, 2k per 5 │
+│  min burst.                                                                  │
+│                                                                              │
+│ Project Structure                                                            │
+│                                                                              │
+│ feeds/nz_legislation_api/                                                    │
+│ ├── .env                    # existing — API key + config                    │
+│ ├── README.md               # existing                                       │
+│ ├── pyproject.toml           # new — project metadata, httpx + python-dotenv │
+│  deps                                                                        │
+│ ├── nz_legislation/                                                          │
+│ │   ├── __init__.py          # re-export client                              │
+│ │   ├── client.py            # NZLegislationClient class                     │
+│ │   └── models.py            # dataclasses for API responses                 │
+│ └── examples/                                                                │
+│     └── explore.py           # example script for interactive use            │
+│                                                                              │
+│                                                                              │
+│ Implementation Steps                                                         │
+│                                                                              │
+│ 1. Create pyproject.toml                                                     │
+│                                                                              │
+│ - Project name: nz-legislation-api                                           │
+│ - Dependencies: httpx, python-dotenv                                         │
+│ - Python ≥ 3.10                                                              │
+│                                                                              │
+│ 2. Create nz_legislation/models.py                                           │
+│                                                                              │
+│ Dataclasses for typed responses:                                             │
+│ - Work — id, title, type, status, year, etc.                                 │
+│ - SearchResult — list of works + pagination info (total, page, per_page)     │
+│ - Version — id, work_id, title, date, format links                           │
+│ - VersionDetail — extended version info                                      │
+│                                                                              │
+│ 3. Create nz_legislation/client.py                                           │
+│                                                                              │
+│ NZLegislationClient class:                                                   │
+│ - __init__(api_key, base_url) — loads from args or .env                      │
+│ - Uses httpx.Client with X-Api-Key header                                    │
+│ - search_works(search_term, search_field, legislation_type, page, per_page,  │
+│ sort_by, ...) → SearchResult                                                 │
+│ - get_versions(work_id, sort) → list[Version]                                │
+│ - get_version(version_id) → VersionDetail                                    │
+│ - get_rss_feed(work_id) → raw XML string                                     │
+│ - Basic error handling (401, 404, 429)                                       │
+│ - Context manager support (with statement)                                   │
+│                                                                              │
+│ 4. Create nz_legislation/__init__.py                                         │
+│                                                                              │
+│ Re-export NZLegislationClient and model classes.                             │
+│                                                                              │
+│ 5. Create examples/explore.py                                                │
+│                                                                              │
+│ A runnable script demonstrating:                                             │
+│ - Loading client from .env                                                   │
+│ - Searching for acts by title                                                │
+│ - Listing versions of a work                                                 │
+│ - Getting version details                                                    │
+│ - Printing results readably                                                  │
+│                                                                              │
+│ Verification                                                                 │
+│                                                                              │
+│ cd feeds/nz_legislation_api                                                  │
+│ uv sync                                                                      │
+│ # Interactive test:                                                          │
+│ uv run python examples/explore.py                                            │
+│ # Or in a Python shell:                                                      │
+│ uv run python -c "from nz_legislation import NZLegislationClient; c =        │
+│ NZLegislationClient(); print(c.search_works('privacy'))"                     │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+⏺ I'll implement this step by step. Let me first check the existing files.
+
+⏺ Read 3 files (ctrl+o to expand)
+
+⏺ Let me fetch the API docs to understand the exact response shapes.
+
+⏺ Fetch(https://api.legislation.govt.nz/docs/)
+  ⎿  Received 170.4KB (200 OK)
+
+⏺ Now I have the full API details. Let me create all the files.
+
+⏺ Bash(mkdir -p
+      /Users/chrisbc/DEV/fairplay/feeds/nz_legislation_api/nz_legislation
+      /Users/chrisbc/DEV/fairplay/feeds/nz_legislation_api/examples)
+  ⎿  Done
+
+⏺ Write(feeds/nz_legislation_api/pyproject.toml)
+  ⎿  Wrote 14 lines to feeds/nz_legislation_api/pyproject.toml
+      1 [project]
+      2 name = "nz-legislation-api"
+      3 version = "0.1.0"
+      4 description = "Python client for the NZ Legislation API"
+      5 requires-python = ">=3.10"
+      6 dependencies = [
+      7     "httpx",
+      8     "python-dotenv",
+      9 ]
+     … +4 lines (ctrl+o to expand)
+
+⏺ Write(feeds/nz_legislation_api/nz_legislation/models.py)
+  ⎿  Wrote 140 lines to feeds/nz_legislation_api/nz_legislation/models.py
+       1 """Dataclasses for NZ Legislation API responses."""
+       2 
+       3 from __future__ import annotations
+       4 
+       5 from dataclasses import dataclass, field
+       6 
+       7 
+       8 @dataclass
+       9 class Format:
+      10     type: str
+     … +130 lines (ctrl+o to expand)
+
+⏺ Write(feeds/nz_legislation_api/nz_legislation/client.py)
+  ⎿  Wrote 169 lines to feeds/nz_legislation_api/nz_legislation/client.py
+       1 """NZ Legislation API client."""
+       2 
+       3 from __future__ import annotations
+       4 
+       5 import os
+       6 from pathlib import Path
+       7 from typing import Any
+       8 
+       9 import httpx
+      10 from dotenv import load_dotenv
+     … +159 lines (ctrl+o to expand)
+
+⏺ Write(feeds/nz_legislation_api/nz_legislation/__init__.py)
+  ⎿  Wrote 25 lines to feeds/nz_legislation_api/nz_legislation/__init__.py
+       1 """NZ Legislation API client."""
+       2 
+       3 from .client import NZLegislationClient, NZLegislationError
+       4 from .models import (
+       5     Format,
+       6     MatchingVersion,
+       7     SearchResult,
+       8     Version,
+       9     VersionDetail,
+      10     VersionList,
+     … +15 lines (ctrl+o to expand)
+
+⏺ Write(feeds/nz_legislation_api/examples/explore.py)
+  ⎿  Wrote 55 lines to feeds/nz_legislation_api/examples/explore.py
+       1 #!/usr/bin/env python3
+       2 """Example: explore the NZ Legislation API."""
+       3 
+       4 from nz_legislation import NZLegislationClient
+       5 
+       6 
+       7 def main() -> None:
+       8     with NZLegislationClient() as client:
+       9         # 1. Search for acts mentioning "privacy"
+      10         print("=== Search: 'privacy' ===")
+     … +45 lines (ctrl+o to expand)
+
+⏺ Bash(cd /Users/chrisbc/DEV/fairplay/feeds/nz_legislation_api && uv sync 2>&1)
+  ⎿  Error: Exit code 127
+     (eval):1: command not found: uv
+
+⏺ Searched for 1 pattern (ctrl+o to expand)
+
+⏺ Bash(pip3 install uv 2>&1 | tail -5)
+  ⎿      Read more about this behavior here: <https://peps.python.org/pep-0
+     668/>
+     … +5 lines (ctrl+o to expand)
+
+⏺ Bash(brew list uv 2>/dev/null || brew install uv 2>&1 | tail -5)
+  ⎿  Disable this behaviour by setting `HOMEBREW_NO_INSTALL_CLEANUP=1`.
+     Hide these hints with `HOMEBREW_NO_ENV_HINTS=1` (see `man brew`).
+     ==> Caveats
+     … +2 lines (ctrl+o to expand)
+
+⏺ Bash(cd /Users/chrisbc/DEV/fairplay/feeds/nz_legislation_api &&
+      /opt/homebrew/bin/uv sync 2>&1)
+  ⎿  Error: Exit code 1
+     Using CPython 3.14.3 interpreter at: 
+     /opt/homebrew/opt/python@3.14/bin/python3.14
+     Creating virtual environment at: .venv
+     Resolved 10 packages in 286ms
+        Building nz-legislation-api @ 
+     file:///Users/chrisbc/DEV/fairplay/feeds/nz_legislation_api
+       × Failed to build `nz-legislation-api @
+       │ file:///Users/chrisbc/DEV/fairplay/feeds/nz_legislation_api`
+       ├─▶ The build backend returned an error
+       ╰─▶ Call to `hatchling.build.build_editable` failed (exit status: 1)
+
+     … +76 lines (ctrl+o to see all)
+
+⏺ Need to tell hatch where the package is.
+
+⏺ Update(feeds/nz_legislation_api/pyproject.toml)
+  ⎿  Added 3 lines
+      11  [build-system]
+      12  requires = ["hatchling"]
+      13  build-backend = "hatchling.build"
+      14 +                                                               
+      15 +[tool.hatch.build.targets.wheel]                               
+      16 +packages = ["nz_legislation"]                                  
+
+⏺ Bash(cd /Users/chrisbc/DEV/fairplay/feeds/nz_legislation_api &&
+      /opt/homebrew/bin/uv sync 2>&1)
+  ⎿  Resolved 10 packages in 2ms
+        Building nz-legislation-api @ file:///Users/chrisbc/DEV/fairplay/fe
+     eds/nz_legislation_api
+     … +13 lines (ctrl+o to expand)
+
+⏺ Dependencies installed. Now let me test the client.
+
+⏺ Bash(/opt/homebrew/bin/uv run python -c "from nz_legislation import
+      NZLegislationClient; c = NZLegislationClient(); r =
+      c.search_works('privacy', per_page=3); print(…)
+  ⎿  Total: 80
+       bill_government_2018_34
+       act_public_2020_31
+       act_public_1993_28
+
+⏺ Client works. Let me run the full example script.
+
+⏺ Bash(/opt/homebrew/bin/uv run python examples/explore.py 2>&1)
+  ⎿  === Search: 'privacy' ===
+     Found 19 works (showing first 5)
+     … +33 lines (ctrl+o to expand)
+
+⏺ Everything works. Here's a summary of what was created:
+
+  Files created:
+  - pyproject.toml — project config with httpx + python-dotenv deps
+  - nz_legislation/__init__.py — re-exports all public classes
+  - nz_legislation/models.py — dataclasses: Work, SearchResult, Version,
+  VersionList, VersionDetail, Format, MatchingVersion
+  - nz_legislation/client.py — NZLegislationClient with 4 methods:
+    - search_works() — full search with all filter params
+    - get_versions(work_id) — list versions of a work
+    - get_version(version_id) — get single version details
+    - get_rss_feed(work_id) — raw XML
+  - examples/explore.py — runnable demo script
+
+  Key features:
+  - Loads API key from .env automatically
+  - Auth via X-Api-Key header
+  - Error handling for 401, 403, 404, 429 with rate-limit info
+  - Context manager support (with statement)
+  - All response fields from the API docs are mapped to typed dataclasses
+
+  The example script ran successfully, searching for "privacy" acts and drilling
+   into versions of the Privacy Act 2020.
+
+✻ Cogitated for 1m 56s
+
+❯ commit this 
+
+⏺ Bash(cd /Users/chrisbc/DEV/fairplay && git status)
+  ⎿  On branch main
+     Your branch is up to date with 'origin/main'.
+     … +7 lines (ctrl+o to expand)
+
+⏺ Bash(git diff --staged && git diff)
+  ⎿  (No output)
+
+⏺ Bash(git log --oneline -5)
+  ⎿  9316e94 Merge pull request #1 from chrisbc/initial
+     c29e230 move Hansard samples; add opencode-sessions;
+     290b6c5 build a demo website; sample hansard content; record opencode-
+     … +3 lines (ctrl+o to expand)
+
+⏺ Bash(git add feeds/nz_legislation_api/pyproject.toml
+      feeds/nz_legislation_api/nz_legislation/__init__.py
+      feeds/nz_legislation_api/nz_legislation/models.py feeds/nz_l…)
+  ⎿  [main 6a090c8] add NZ Legislation API Python client
+      5 files changed, 401 insertions(+)
+      create mode 100644 feeds/nz_legislation_api/examples/explore.py
+     … +5 lines (ctrl+o to expand)
+
+⏺ Bash(git status)
+  ⎿  On branch main
+     Your branch is ahead of 'origin/main' by 1 commit.
+       (use "git push" to publish your local commits)
+     … +11 lines (ctrl+o to expand)
+
+⏺ Committed as 6a090c8 on main. Note I excluded .env (contains your API key),
+  .DS_Store, __pycache__/, and uv.lock from the commit. You may want to add a
+  .gitignore and separately commit README.md and uv.lock if desired.
+
+❯ /export 
+  ⎿  Failed to export conversation: ENOENT: no such file or directory, open
+     '/Users/chrisbc/DEV/fairplay/claude-sessions/2026-02-17-172727-implement-th
+     e-following-plan.txt'
+
+❯ /add-dir claude-sessions 
+  ⎿  Path /Users/chrisbc/DEV/fairplay/claude-sessions was not found.
