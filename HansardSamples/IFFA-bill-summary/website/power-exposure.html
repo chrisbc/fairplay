@@ -5,17 +5,262 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Power vs Exposure — IFF Amendment Bill 2025</title>
   <link rel="stylesheet" href="shared.css">
+  <style>
+    .quadrant-viz {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .quadrant-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .quadrant-node {
+      cursor: pointer;
+    }
+    .node-circle {
+      transition: all 0.25s ease;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+    }
+    .quadrant-node:hover .node-circle {
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6)) brightness(1.2);
+    }
+    .node-label {
+      fill: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      pointer-events: none;
+    }
+    .node-sublabel {
+      fill: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 10px;
+      pointer-events: none;
+    }
+    .quadrant-label {
+      fill: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .axis-label {
+      fill: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .grid-line {
+      stroke: var(--border-strong);
+      stroke-width: 1;
+    }
+    .quadrant-bg {
+      transition: opacity 0.3s ease;
+    }
+    
+    .detail-panel {
+      position: fixed;
+      right: 0;
+      top: var(--nav-h);
+      width: 360px;
+      max-width: 100vw;
+      height: calc(100vh - var(--nav-h));
+      background: var(--card);
+      border-left: 1px solid var(--border-strong);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 50;
+      overflow-y: auto;
+      box-shadow: -8px 0 30px rgba(0,0,0,0.4);
+    }
+    .detail-panel.open {
+      transform: translateX(0);
+    }
+    .detail-header {
+      position: sticky;
+      top: 0;
+      background: var(--card);
+      padding: 1.5rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      z-index: 1;
+    }
+    .detail-body {
+      padding: 1.5rem;
+    }
+    .detail-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    .detail-close:hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: var(--red-dim);
+    }
+    .detail-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      line-height: 1.2;
+      padding-right: 2rem;
+    }
+    .detail-type {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 0.75rem;
+    }
+    .detail-type.winners { background: var(--green-dim); color: var(--green); }
+    .detail-type.neutral { background: var(--amber-dim); color: var(--amber); }
+    .detail-type.losers { background: var(--red-dim); color: var(--red-bright); }
+    .detail-type.bystander { background: var(--neutral); color: var(--blue); }
+    
+    .detail-section {
+      margin-bottom: 1.5rem;
+    }
+    .detail-section h3 {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+      font-family: var(--font-mono);
+    }
+    .detail-section p {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+    
+    .meter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .meter-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .meter-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      width: 70px;
+      flex-shrink: 0;
+    }
+    .meter-bars {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .meter-bar {
+      height: 8px;
+      border-radius: 4px;
+      flex: 1;
+      background: var(--border);
+    }
+    .meter-bar.filled { background: var(--text-muted); }
+    .meter-bar.filled.high { background: var(--green); }
+    .meter-bar.filled.low { background: var(--red); }
+    .meter-value {
+      font-size: 0.75rem;
+      font-weight: 600;
+      width: 40px;
+      text-align: right;
+      color: var(--text);
+      font-family: var(--font-mono);
+    }
+    
+    .legend-bar {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      padding: 1rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .legend-dot.winners { background: var(--green); }
+    .legend-dot.neutral { background: var(--amber); }
+    .legend-dot.losers { background: var(--red); }
+    .legend-dot.bystander { background: var(--blue); }
+    
+    @keyframes nodeEnter {
+      from {
+        opacity: 0;
+        transform: scale(0) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .quadrant-viz {
+        overflow-x: auto;
+      }
+      .quadrant-svg {
+        min-width: 500px;
+      }
+      .detail-panel {
+        width: 100%;
+        max-width: 100%;
+      }
+      .node-label {
+        font-size: 11px;
+      }
+      .node-sublabel {
+        font-size: 9px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <nav class="site-nav" id="site-nav"></nav>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <nav class="site-nav" id="site-nav" aria-label="Section navigation"></nav>
 
-  <div class="page-hero">
+  <div class="page-hero" id="main">
     <div class="container">
       <span class="page-tag">Section 07 of 09</span>
       <h1>Power vs Exposure</h1>
       <p class="hero-subtitle">
         A quadrant analysis of who has decision-making power under the amended Act,
-        and who bears financial and legal risk — revealing a systematic inversion of democratic accountability.
+        and who bears financial and legal risk. Click any node to explore.
       </p>
     </div>
   </div>
@@ -25,122 +270,96 @@
 
       <div class="section-block">
         <h2 class="section-heading">The Quadrant Map</h2>
-        <div style="position:relative; padding: 0 2.5rem 2.5rem 2.5rem; max-width:900px; margin:0 auto;">
-          <div class="power-map">
-            <div class="power-quadrant pq-tl">
-              <div class="pq-label">⬆ High Power · ⬇ Low Exposure</div>
-              <div class="actor-badge">💼 Investment Banks</div>
-              <div class="actor-badge">🏗️ Infrastructure Developers</div>
-              <div class="actor-badge">🏦 SPV Bondholders</div>
-            </div>
-            <div class="power-quadrant pq-tr">
-              <div class="pq-label">⬆ High Power · ⬆ High Exposure</div>
-              <div class="actor-badge">🏛️ The Minister</div>
-              <div class="actor-badge" style="font-size:0.72rem;color:var(--text-muted);">Political accountability — but no direct legal or financial liability for levy outcomes</div>
-            </div>
-            <div class="power-quadrant pq-bl">
-              <div class="pq-label">⬇ Low Power · ⬆ High Exposure</div>
-              <div class="actor-badge">🏠 Homeowners</div>
-              <div class="actor-badge">🔑 Renters</div>
-              <div class="actor-badge">🌿 Māori Landowners</div>
-              <div class="actor-badge">👶 Future Generations</div>
-            </div>
-            <div class="power-quadrant pq-br">
-              <div class="pq-label">⬇ Low Power · ⬇ Low Exposure</div>
-              <div class="actor-badge">📋 The Monitor</div>
-              <div class="actor-badge" style="font-size:0.72rem;color:var(--text-muted);">Watches the SPV — but has no power to intervene, stop the levy, or protect levypayers</div>
-            </div>
-          </div>
-          <div class="power-axis-x">← Less Power &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; More Power →</div>
-          <div class="power-axis-y">↑ More Exposure · Less Exposure ↓</div>
-        </div>
-        <p style="font-size:0.82rem;color:var(--text-muted);margin-top:2.5rem;max-width:680px;">
-          In a well-designed system, power and exposure would be aligned: those who make decisions would bear consequences,
-          and those who bear consequences would have a voice in decisions. The amendment inverts this entirely —
+        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:680px;">
+          In a well-designed system, power and exposure align. The amendment inverts this —
           moving exposure to parties with no power, and power to parties with no exposure.
         </p>
-      </div>
-
-      <div class="section-block">
-        <h2 class="section-heading">Risk vs Reward: The Data</h2>
-        <div style="overflow-x:auto;">
-          <table class="safeguards-table">
-            <thead>
-              <tr>
-                <th>Party</th>
-                <th>Power under Bill 2025</th>
-                <th>Financial exposure</th>
-                <th>Accountability</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>🏗️ Infrastructure Developer</strong></td>
-                <td style="color:var(--green);">Very high — designs proposal, sets failure triggers, owns land</td>
-                <td style="color:var(--green);">Very low — receives $3B upfront, exits equity, risk transferred to consumers</td>
-                <td style="color:var(--text-muted);">None — no ongoing obligation if project fails</td>
-              </tr>
-              <tr>
-                <td><strong>🏦 SPV Bondholders</strong></td>
-                <td style="color:var(--green);">High — hold statutory levy rights, can force land sales</td>
-                <td style="color:var(--green);">Near zero — statutory revenue stream regardless of asset performance</td>
-                <td style="color:var(--text-muted);">None — contractual right to payment; no public interest obligation</td>
-              </tr>
-              <tr>
-                <td><strong>💼 Investment Banks</strong></td>
-                <td style="color:var(--green);">Moderate — structure deals, influence arrangements</td>
-                <td style="color:var(--green);">Zero — arrangement fees only; no equity or bond exposure</td>
-                <td style="color:var(--text-muted);">None</td>
-              </tr>
-              <tr>
-                <td><strong>🏛️ The Minister</strong></td>
-                <td style="color:var(--amber);">Sole decision-maker — approves levy orders</td>
-                <td style="color:var(--amber);">Political — can be voted out, but levy order persists</td>
-                <td style="color:var(--amber);">Electoral only — no financial or legal liability for bad decisions</td>
-              </tr>
-              <tr>
-                <td><strong>🏠 NZ Homeowners</strong></td>
-                <td style="color:var(--red-bright);">None — compulsory levy, no participation rights</td>
-                <td style="color:var(--red-bright);">Very high — 30-year compulsory payments, forced sale risk</td>
-                <td style="color:var(--text-muted);">None — cannot challenge levy, cannot stop payments, no refund mechanism</td>
-              </tr>
-              <tr>
-                <td><strong>🌿 Māori Landowners</strong></td>
-                <td style="color:var(--red-bright);">None — consent removed for large projects</td>
-                <td style="color:var(--red-bright);">Very high — land included without agreement, Treaty rights bypassed</td>
-                <td style="color:var(--text-muted);">Judicial review possible but practically difficult</td>
-              </tr>
-              <tr>
-                <td><strong>👶 Future Generations</strong></td>
-                <td style="color:var(--red-bright);">None — obligations exist before they participate in democracy</td>
-                <td style="color:var(--red-bright);">Very high — inherit full 30-year obligations, including zombie levy period</td>
-                <td style="color:var(--text-muted);">None</td>
-              </tr>
-            </tbody>
-          </table>
+        
+        <div class="quadrant-viz">
+          <svg class="quadrant-svg" viewBox="0 0 700 700" preserveAspectRatio="xMidYMid meet" id="quadrantSvg">
+            <defs>
+              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            
+            <!-- Grid axes -->
+            <line class="grid-line" x1="350" y1="40" x2="350" y2="660" />
+            <line class="grid-line" x1="40" y1="350" x2="660" y2="350" />
+            
+            <!-- Quadrant backgrounds -->
+            <rect class="quadrant-bg" x="40" y="40" width="310" height="310" fill="var(--green-dim)" rx="8"/>
+            <rect class="quadrant-bg" x="350" y="40" width="310" height="310" fill="var(--amber-dim)" rx="8"/>
+            <rect class="quadrant-bg" x="40" y="350" width="310" height="310" fill="var(--red-dim)" rx="8"/>
+            <rect class="quadrant-bg" x="350" y="350" width="310" height="310" fill="var(--neutral)" rx="8"/>
+            
+            <!-- Quadrant labels -->
+            <text class="quadrant-label" x="195" y="70" text-anchor="middle" fill="var(--green)">WINNERS</text>
+            <text class="quadrant-label" x="505" y="70" text-anchor="middle" fill="var(--amber)">DECIDERS</text>
+            <text class="quadrant-label" x="195" y="380" text-anchor="middle" fill="var(--red-bright)">LOSERS</text>
+            <text class="quadrant-label" x="505" y="380" text-anchor="middle" fill="var(--blue)">BYSTANDERS</text>
+            
+            <!-- Axis labels -->
+            <text class="axis-label" x="350" y="690" text-anchor="middle" fill="var(--text-muted)">← Less Power                                                                                                                                              More Power →</text>
+            <text class="axis-label" x="20" y="350" text-anchor="middle" transform="rotate(-90 20 350)" fill="var(--text-muted)">↑ More Exposure                                                                                                                                              Less Exposure ↓</text>
+            
+            <!-- Nodes rendered by JS -->
+            <g id="nodesGroup"></g>
+          </svg>
+        </div>
+        
+        <div class="legend-bar">
+          <div class="legend-item">
+            <div class="legend-dot winners"></div>
+            <span>Winners</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot neutral"></div>
+            <span>Deciders</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot losers"></div>
+            <span>Losers</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot bystander"></div>
+            <span>Bystanders</span>
+          </div>
         </div>
       </div>
 
-      <div class="section-block">
+      <div class="section-block" style="margin-top:3rem;">
         <h2 class="section-heading">The Perverse Incentive Structure</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem;">
-            <div style="color:var(--amber);font-weight:700;margin-bottom:0.5rem;">Incentive to keep stranded assets running</div>
-            <p style="font-size:0.82rem;color:var(--text-muted);line-height:1.55;">SPV investors may lobby to keep infrastructure operating even when alternatives are cheaper — because a mothballed terminal with a running levy is politically toxic. Uneconomic operation maintains the narrative that the levy is justified.</p>
+        <div class="safeguard-explainer-grid">
+          <div class="safeguard-explainer">
+            <div class="safeguard-explainer-title" style="color:var(--amber);">Incentive to keep stranded assets running</div>
+            <p>SPV investors may lobby to keep infrastructure operating even when alternatives are cheaper — because a mothballed asset with a running levy is politically toxic.</p>
           </div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem;">
-            <div style="color:var(--amber);font-weight:700;margin-bottom:0.5rem;">Incentive against alternative investment</div>
-            <p style="font-size:0.82rem;color:var(--text-muted);line-height:1.55;">While the levy runs, every MWh from renewables still pays it. Investing in batteries or solar does not reduce the levy. The levy makes electricity more expensive, slowing electrification of transport and industry — the transition the levy was supposed to enable.</p>
+          <div class="safeguard-explainer">
+            <div class="safeguard-explainer-title" style="color:var(--amber);">Incentive against alternative investment</div>
+            <p>While the levy runs, investing in alternatives does not reduce it. The levy makes transitions more expensive, slowing the very changes it was meant to enable.</p>
           </div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem;">
-            <div style="color:var(--amber);font-weight:700;margin-bottom:0.5rem;">Incentive to overstate risks</div>
-            <p style="font-size:0.82rem;color:var(--text-muted);line-height:1.55;">If the IFF model "works" for one large project, it creates a template. Proponents have every incentive to overstate energy security risks to justify compulsory levy funding — especially with no affordability assessment, no consultation, and no council veto.</p>
+          <div class="safeguard-explainer">
+            <div class="safeguard-explainer-title" style="color:var(--amber);">Incentive to overstate risks</div>
+            <p>Proponents have every incentive to overstate risks to justify compulsory levy funding — especially with no affordability assessment, no consultation, and no council veto.</p>
           </div>
         </div>
       </div>
 
     </div>
   </main>
+
+  <div class="detail-panel" id="detailPanel" role="dialog" aria-label="Actor details">
+    <div class="detail-header">
+      <button class="detail-close" onclick="closeDetailPanel()" aria-label="Close detail panel">✕</button>
+      <div id="detailContent"></div>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
 
   <footer class="site-footer">
     <div class="container">
@@ -151,5 +370,281 @@
 
   <script src="nav.js"></script>
   <script>initNav('power-exposure');</script>
+  <script>
+    const actors = [
+      {
+        id: 'devs',
+        name: 'Infrastructure Developers',
+        short: 'Developers',
+        x: 0.72,
+        y: 0.22,
+        type: 'winners',
+        power: 5,
+        exposure: 1,
+        summary: 'Designs proposal, sets failure triggers, owns land — receives upfront payment, exits equity, transfers all risk to consumers',
+        sections: {
+          'Power': 'Very high — designs the proposal, sets failure triggers, owns the land, benefits from mandatory endorsements',
+          'Exposure': 'Very low — receives billions upfront through SPV structure, exits equity position, risk transferred',
+          'Accountability': 'None — no ongoing obligation if project fails after levy is issued',
+          'Mechanism': 'Mandatory council endorsement removes local veto; no affordability assessment'
+        }
+      },
+      {
+        id: 'bondholders',
+        name: 'SPV Bondholders',
+        short: 'Bondholders',
+        x: 0.55,
+        y: 0.18,
+        type: 'winners',
+        power: 4,
+        exposure: 1,
+        summary: 'Statutory levy-backed revenue, can force land sales, 30-year guaranteed income regardless of asset performance',
+        sections: {
+          'Power': 'High — hold statutory levy rights, can force land sales for non-payment',
+          'Exposure': 'Near zero — statutory revenue stream regardless of asset performance, legally guaranteed',
+          'Accountability': 'None — contractual right to payment supersedes public interest',
+          'Shift': 'Previously ranked behind rates in recovery; now ranked equally'
+        }
+      },
+      {
+        id: 'banks',
+        name: 'Investment Banks',
+        short: 'Banks',
+        x: 0.85,
+        y: 0.28,
+        type: 'winners',
+        power: 3,
+        exposure: 1,
+        summary: 'Arrangement fees on billion-dollar bond issuances, zero exposure to stranding risk',
+        sections: {
+          'Power': 'Moderate — structure deals, influence arrangement terms, advise on SPV design',
+          'Exposure': 'Zero — arrangement fees only; no equity or bond exposure, no ongoing liability',
+          'Accountability': 'None — fees collected upfront, no regulatory obligation'
+        }
+      },
+      {
+        id: 'minister',
+        name: 'The Minister',
+        short: 'Minister',
+        x: 0.62,
+        y: 0.52,
+        type: 'neutral',
+        power: 5,
+        exposure: 2,
+        summary: 'Sole decision-maker with electoral accountability only — no financial or legal liability',
+        sections: {
+          'Power': 'Very high — sole authority to approve levy orders after mandatory endorsements',
+          'Exposure': 'Political only — can be voted out, but levy order persists regardless',
+          'Accountability': 'Electoral only — no financial or legal liability for decisions',
+          'Shift': 'Previously 5 portfolios consulted; now one minister decides alone'
+        }
+      },
+      {
+        id: 'homeowners',
+        name: 'NZ Homeowners',
+        short: 'Homeowners',
+        x: 0.18,
+        y: 0.78,
+        type: 'losers',
+        power: 1,
+        exposure: 5,
+        summary: 'Compulsory levy with no participation rights, 30-year lock-in, forced sale risk',
+        sections: {
+          'Power': 'None — compulsory levy, no participation in process, no consultation rights',
+          'Exposure': 'Very high — 30-year payments, forced sale risk, no exit mechanism',
+          'Accountability': 'Total — cannot challenge levy, cannot stop payments, no refund',
+          'Losses': 'Affordability assessment exempted; council discretion removed'
+        }
+      },
+      {
+        id: 'renters',
+        name: 'Renters',
+        short: 'Renters',
+        x: 0.25,
+        y: 0.72,
+        type: 'losers',
+        power: 1,
+        exposure: 4,
+        summary: 'Costs passed through by landlords, no voice in process, flat levy hits low-income hardest',
+        sections: {
+          'Power': 'None — no participation rights whatsoever; not consulted or notified',
+          'Exposure': 'High — costs passed as higher rent; flat levy is regressive',
+          'Protection': 'None — no affordability protection despite being most vulnerable'
+        }
+      },
+      {
+        id: 'maori',
+        name: 'Māori Landowners',
+        short: 'Māori',
+        x: 0.32,
+        y: 0.88,
+        type: 'losers',
+        power: 1,
+        exposure: 5,
+        summary: 'Consent bypassed for largest projects, Treaty obligations not assessed, protected land included without agreement',
+        sections: {
+          'Power': 'None — consent removed for projects over 5,000 properties — the largest ones',
+          'Exposure': 'Very high — protected land included without agreement; Treaty bypassed',
+          'Recourse': 'Judicial review possible but difficult and expensive'
+        }
+      },
+      {
+        id: 'future',
+        name: 'Future Generations',
+        short: 'Future Gen',
+        x: 0.12,
+        y: 0.65,
+        type: 'losers',
+        power: 1,
+        exposure: 5,
+        summary: 'Inherit 30-year obligations made before they could vote, may pay for stranded assets without benefit',
+        sections: {
+          'Power': 'None — obligations exist before they participate in democracy',
+          'Exposure': 'Very high — inherit full 30-year obligations including zombie period',
+          'Equity': 'Structurally embedded intergenerational inequity'
+        }
+      },
+      {
+        id: 'monitor',
+        name: 'The Monitor',
+        short: 'Monitor',
+        x: 0.82,
+        y: 0.82,
+        type: 'bystander',
+        power: 2,
+        exposure: 1,
+        summary: 'Watches the SPV but has no power to intervene, stop the levy, or protect levypayers',
+        sections: {
+          'Power': 'Low — monitoring and reporting role only; no intervention powers',
+          'Exposure': 'Low — administrative role, no financial liability',
+          'Effect': 'Can observe but cannot act; reports may be redacted'
+        }
+      }
+    ];
+
+    const colors = {
+      winners: '#3ddc84',
+      neutral: '#f5a623',
+      losers: '#ff5555',
+      bystander: '#4e9fff'
+    };
+
+    const typeLabels = {
+      winners: 'WINNER — Low Exposure',
+      neutral: 'DECIDER — Political Exposure',
+      losers: 'LOSER — High Exposure',
+      bystander: 'BYSTANDER — Limited Role'
+    };
+
+    let nodesGroup = document.getElementById('nodesGroup');
+
+    function createNodes() {
+      actors.forEach((actor, index) => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.classList.add('quadrant-node');
+        g.setAttribute('data-id', actor.id);
+        g.style.animation = `nodeEnter 0.35s ease ${index * 0.06 + 0.2}s both`;
+        g.style.transformOrigin = `${40 + actor.x * 620}px ${40 + actor.y * 620}px`;
+        
+        const cx = 40 + actor.x * 620;
+        const cy = 40 + actor.y * 620;
+        const baseRadius = 38;
+        
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.classList.add('node-circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', baseRadius);
+        circle.setAttribute('fill', colors[actor.type]);
+        circle.setAttribute('stroke', 'rgba(255,255,255,0.15)');
+        circle.setAttribute('stroke-width', '2');
+        
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.classList.add('node-label');
+        label.setAttribute('x', cx);
+        label.setAttribute('y', cy - 6);
+        label.setAttribute('text-anchor', 'middle');
+        label.textContent = actor.short;
+        
+        const sublabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        sublabel.classList.add('node-sublabel');
+        sublabel.setAttribute('x', cx);
+        sublabel.setAttribute('y', cy + 10);
+        sublabel.setAttribute('text-anchor', 'middle');
+        sublabel.textContent = `P:${'●'.repeat(actor.power)} E:${'●'.repeat(actor.exposure)}`;
+        
+        g.appendChild(circle);
+        g.appendChild(label);
+        g.appendChild(sublabel);
+        
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showDetail(actor);
+        });
+        
+        nodesGroup.appendChild(g);
+      });
+    }
+
+    function showDetail(actor) {
+      const headerContent = document.getElementById('detailContent');
+      const bodyContent = document.getElementById('detailBody');
+      
+      headerContent.innerHTML = `
+        <div class="detail-title">${actor.name}</div>
+        <span class="detail-type ${actor.type}">${typeLabels[actor.type]}</span>
+      `;
+      
+      let sectionsHTML = '';
+      for (const [title, text] of Object.entries(actor.sections)) {
+        sectionsHTML += `
+          <div class="detail-section">
+            <h3>${title}</h3>
+            <p>${text}</p>
+          </div>
+        `;
+      }
+      
+      bodyContent.innerHTML = `
+        <div class="meter-group">
+          <div class="meter-row">
+            <span class="meter-label">Power</span>
+            <div class="meter-bars">
+              ${Array(5).fill(0).map((_, i) => 
+                `<div class="meter-bar ${i < actor.power ? 'filled high' : ''}"></div>`
+              ).join('')}
+            </div>
+            <span class="meter-value">${actor.power}/5</span>
+          </div>
+          <div class="meter-row">
+            <span class="meter-label">Exposure</span>
+            <div class="meter-bars">
+              ${Array(5).fill(0).map((_, i) => 
+                `<div class="meter-bar ${i < actor.exposure ? 'filled low' : ''}"></div>`
+              ).join('')}
+            </div>
+            <span class="meter-value">${actor.exposure}/5</span>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h3>Summary</h3>
+          <p>${actor.summary}</p>
+        </div>
+        ${sectionsHTML}
+      `;
+      
+      document.getElementById('detailPanel').classList.add('open');
+    }
+
+    function closeDetailPanel() {
+      document.getElementById('detailPanel').classList.remove('open');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDetailPanel();
+    });
+
+    createNodes();
+  </script>
 </body>
 </html>

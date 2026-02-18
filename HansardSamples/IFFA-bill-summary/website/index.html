@@ -4,217 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IFF Amendment Bill 2025 — Analysis</title>
-  <style>
-    :root {
-      --bg:     #07080d;
-      --text:   #e8e8df;
-      --muted:  #585868;
-      --dim:    #1a1b26;
-      --red:    #ff2b20;
-      --amber:  #f5a623;
-      --border: #14151f;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-
-    body {
-      height: 100svh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Trebuchet MS', 'Helvetica Neue', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      overflow: hidden;
-      padding: clamp(1.5rem, 4vw, 3.5rem);
-    }
-
-    /* Subtle top-right glow */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; right: 0;
-      width: 55vw; height: 55vh;
-      background: radial-gradient(ellipse at top right,
-        rgba(255,43,32,0.055) 0%, transparent 65%);
-      pointer-events: none;
-    }
-
-    /* ─── LAYOUT ─── */
-    .cover {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(1.5rem, 3vh, 2.5rem);
-      max-width: 900px;
-      width: 100%;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* ─── EYEBROW ─── */
-    .eyebrow {
-      font-family: 'Courier New', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--red);
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-    }
-    .eyebrow::before {
-      content: '';
-      width: 1.5rem;
-      height: 1px;
-      background: var(--red);
-      flex-shrink: 0;
-    }
-
-    /* ─── TITLE ─── */
-    h1 {
-      font-family: 'Arial Black', 'Franklin Gothic Heavy', Impact, sans-serif;
-      text-transform: uppercase;
-      line-height: 0.90;
-      letter-spacing: -0.035em;
-    }
-    .t-main {
-      display: block;
-      font-size: clamp(1.8rem, 4.5vw, 5rem);
-    }
-    .t-bill {
-      display: block;
-      font-size: clamp(2.5rem, 6.5vw, 7rem);
-      margin-top: 0.06em;
-    }
-    .t-year { color: var(--red); }
-
-    /* ─── DIVIDER ─── */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-    .divider-text {
-      font-family: 'Arial Black', sans-serif;
-      font-size: clamp(0.9rem, 2vw, 1.6rem);
-      text-transform: uppercase;
-      letter-spacing: -0.01em;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    /* ─── TAGLINE ─── */
-    .tagline {
-      font-size: clamp(0.8rem, 1.2vw, 0.92rem);
-      color: var(--muted);
-      line-height: 1.7;
-      max-width: 560px;
-      border-left: 2px solid var(--amber);
-      padding-left: 1rem;
-      font-style: italic;
-    }
-
-    /* ─── CTAs ─── */
-    .ctas {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .cta-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-family: 'Courier New', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--text);
-      text-decoration: none;
-      border: 1px solid var(--red);
-      padding: 0.85rem 1.75rem;
-      border-radius: 2px;
-      transition: background 0.2s, color 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-    .cta-primary::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--red);
-      transform: translateX(-100%);
-      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
-    }
-    .cta-primary:hover::before { transform: translateX(0); }
-    .cta-primary span { position: relative; z-index: 1; }
-    .cta-primary:hover { text-decoration: none; }
-
-    .cta-secondary {
-      font-family: 'Courier New', monospace;
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .cta-secondary:hover { color: var(--text); text-decoration: none; }
-
-    /* ─── PAGE-LOAD ANIMATION ─── */
-    @keyframes up {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .eyebrow  { animation: up 0.5s cubic-bezier(0.22,1,0.36,1) both; }
-    h1        { animation: up 0.6s cubic-bezier(0.22,1,0.36,1) 0.07s both; }
-    .divider  { animation: up 0.5s cubic-bezier(0.22,1,0.36,1) 0.15s both; }
-    .tagline  { animation: up 0.5s cubic-bezier(0.22,1,0.36,1) 0.22s both; }
-    .ctas     { animation: up 0.5s cubic-bezier(0.22,1,0.36,1) 0.30s both; }
-
-    @media (max-height: 500px) {
-      body { overflow: auto; height: auto; }
-      .tagline { display: none; }
-    }
-  </style>
+  <link rel="stylesheet" href="shared.css">
 </head>
-<body>
-  <div class="cover">
+<body class="cover-body">
+  <a href="#main" class="skip-link">Skip to content</a>
 
-    <div class="eyebrow">NZ Parliamentary Analysis · February 2026</div>
+  <div class="cover" id="main">
 
-    <h1>
-      <span class="t-main">Infrastructure Funding</span>
-      <span class="t-main">&amp; Financing Amendment</span>
-      <span class="t-bill">Bill <span class="t-year">2025</span></span>
+    <div class="cover-eyebrow">NZ Parliamentary Analysis · February 2026</div>
+
+    <h1 class="cover-title">
+      <span class="cover-title-main">Infrastructure Funding</span>
+      <span class="cover-title-main">&amp; Financing Amendment</span>
+      <span class="cover-title-bill">Bill <span class="cover-title-year">2025</span></span>
     </h1>
 
-    <div class="divider">
-      <span class="divider-text">Who wins. Who loses.</span>
+    <div class="cover-divider">
+      <span class="cover-divider-text">Who wins. Who loses.</span>
     </div>
 
-    <p class="tagline">
+    <p class="cover-tagline">
       "The Bill transfers decision-making power from democratic institutions to private capital,
       while transferring financial risk from private capital to the public."
     </p>
 
-    <div class="ctas">
-      <a class="cta-primary" href="force-network.html">
+    <div class="cover-ctas">
+      <a class="cta-primary" href="force-network.html" aria-label="Begin the analysis">
         <span>Begin analysis</span>
-        <span>→</span>
+        <span aria-hidden="true">→</span>
       </a>
-      <a class="cta-secondary" href="summary.html">All nine sections ↗</a>
+      <a class="cta-secondary" href="summary.html">All nine sections <span aria-hidden="true">↗</span></a>
     </div>
 
   </div>

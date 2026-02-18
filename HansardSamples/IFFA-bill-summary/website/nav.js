@@ -74,23 +74,23 @@ function initNav(currentId) {
   const next = idx < IFFA_PAGES.length - 1 ? IFFA_PAGES[idx + 1] : null;
 
   const prevBtn = prev
-    ? `<a href="${prev.file}" class="nav-btn nav-prev" title="${prev.title}">← Prev</a>`
-    : `<span class="nav-btn nav-disabled">← Prev</span>`;
+    ? `<a href="${prev.file}" class="nav-btn nav-prev" title="${prev.title}" aria-label="Previous section: ${prev.title}">← Prev</a>`
+    : `<span class="nav-btn nav-disabled" aria-disabled="true">← Prev</span>`;
 
   const nextBtn = next
-    ? `<a href="${next.file}" class="nav-btn nav-next" title="${next.title}">Next →</a>`
-    : `<span class="nav-btn nav-disabled">Next →</span>`;
+    ? `<a href="${next.file}" class="nav-btn nav-next" title="${next.title}" aria-label="Next section: ${next.title}">Next →</a>`
+    : `<span class="nav-btn nav-disabled" aria-disabled="true">Next →</span>`;
 
   navEl.innerHTML = `
     <div class="nav-inner">
-      <a href="index.html" class="nav-home" title="Back to overview">
+      <a href="index.html" class="nav-home" title="Back to overview" aria-label="Back to overview">
         ${HOME_ICON_SVG}
         <span class="nav-home-text">IFFA Analysis</span>
       </a>
-      <div class="nav-breadcrumb">${current ? current.title : ''}</div>
-      <div class="nav-controls">
+      <div class="nav-breadcrumb" aria-current="page">${current ? current.title : ''}</div>
+      <div class="nav-controls" role="navigation" aria-label="Section navigation">
         ${prevBtn}
-        <span class="nav-page-count">${idx + 1} / ${IFFA_PAGES.length}</span>
+        <span class="nav-page-count" aria-label="Section ${idx + 1} of ${IFFA_PAGES.length}">${idx + 1} / ${IFFA_PAGES.length}</span>
         ${nextBtn}
       </div>
     </div>
