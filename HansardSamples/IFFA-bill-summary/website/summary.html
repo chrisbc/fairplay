@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Sections — IFF Amendment Bill 2025</title>
+  <style>
+    :root {
+      --bg:     #07080d;
+      --bg2:    #0b0c15;
+      --text:   #e8e8df;
+      --muted:  #606070;
+      --dim:    #1a1b26;
+      --red:    #ff2b20;
+      --amber:  #f5a623;
+      --border: #14151f;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Trebuchet MS', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── TOP NAV ─── */
+    .top-nav {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.5rem, 4vw, 3rem);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .nav-back {
+      font-family: 'Courier New', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.15s;
+    }
+    .nav-back:hover { color: var(--red); text-decoration: none; }
+
+    .nav-title {
+      font-family: 'Courier New', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .nav-begin {
+      font-family: 'Courier New', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-begin:hover { color: var(--red); text-decoration: none; }
+
+    /* ─── HEADER ─── */
+    .page-header {
+      padding: clamp(2rem, 4vh, 3.5rem) clamp(1.5rem, 4vw, 3rem) clamp(1.5rem, 3vh, 2.5rem);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-header h1 {
+      font-family: 'Arial Black', 'Franklin Gothic Heavy', sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2.4rem);
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      line-height: 0.92;
+      margin-bottom: 0.6rem;
+    }
+    .page-header h1 em { color: var(--red); font-style: normal; }
+
+    .page-header p {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ─── CARD GRID ─── */
+    .grid-wrap {
+      flex: 1;
+      padding: 0;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card {
+      position: relative;
+      padding: 1.75rem 1.75rem 1.5rem;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background 0.18s;
+      min-height: 180px;
+    }
+
+    /* Grid border rules — no outer borders */
+    .card:nth-child(3n)   { border-right: none; }
+    .card:nth-child(n+7)  { border-bottom: none; }
+
+    /* Red left-accent on hover */
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 0;
+      background: var(--red);
+      transition: width 0.18s ease;
+    }
+    .card:hover::before { width: 3px; }
+    .card:hover { background: var(--bg2); text-decoration: none; }
+
+    /* Large faded watermark number */
+    .card-bg {
+      position: absolute;
+      right: 0.25rem;
+      bottom: -0.75rem;
+      font-family: 'Arial Black', sans-serif;
+      font-size: 6rem;
+      font-weight: 900;
+      color: rgba(255,255,255,0.022);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.06em;
+    }
+
+    .card-num {
+      font-family: 'Courier New', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      margin-bottom: 0.6rem;
+      flex: 1;
+    }
+
+    .card-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 1.1rem;
+    }
+
+    .card-arrow {
+      font-family: 'Courier New', monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: gap 0.18s;
+    }
+    .card:hover .card-arrow { gap: 0.6rem; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.25rem clamp(1.5rem, 4vw, 3rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-text {
+      font-family: 'Courier New', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .footer-begin {
+      font-family: 'Courier New', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--dim);
+      padding: 0.45rem 1rem;
+      border-radius: 2px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .footer-begin:hover { border-color: var(--red); color: var(--red); text-decoration: none; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 860px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .card:nth-child(3n)   { border-right: 1px solid var(--border); }
+      .card:nth-child(n+7)  { border-bottom: 1px solid var(--border); }
+      .card:nth-child(2n)   { border-right: none; }
+      .card:nth-child(n+8)  { border-bottom: none; }
+    }
+    @media (max-width: 520px) {
+      .cards { grid-template-columns: 1fr; }
+      .card { border-right: none; border-bottom: 1px solid var(--border); min-height: auto; }
+      .card:last-child { border-bottom: none; }
+      .card:nth-child(3n)  { border-right: none; }
+      .card:nth-child(n+7) { border-bottom: 1px solid var(--border); }
+      .nav-title { display: none; }
+    }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-header { animation: up 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+    .grid-wrap   { animation: up 0.45s cubic-bezier(0.22,1,0.36,1) 0.08s both; }
+  </style>
+</head>
+<body>
+
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <a class="nav-back" href="index.html">← Cover</a>
+    <span class="nav-title">IFF Amendment Bill 2025 · All Sections</span>
+    <a class="nav-begin" href="force-network.html">Begin analysis →</a>
+  </nav>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h1>All <em>Nine</em> Sections</h1>
+    <p>Select any section to open it, or begin from section 01 and navigate through in sequence.</p>
+  </div>
+
+  <!-- CARD GRID -->
+  <div class="grid-wrap">
+    <div class="cards">
+
+      <a class="card" href="force-network.html">
+        <div class="card-bg">01</div>
+        <div class="card-num">01 / 09</div>
+        <div class="card-title">The Force Network</div>
+        <div class="card-desc">Who shapes the rules — and who bears the cost for 30 years.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+      <a class="card" href="accountability-chain.html">
+        <div class="card-bg">02</div>
+        <div class="card-num">02 / 09</div>
+        <div class="card-title">The Approval Chain</div>
+        <div class="card-desc">Six independent gates in 2020. One gatekeeper in 2025.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+      <a class="card" href="stakeholders.html">
+        <div class="card-bg">03</div>
+        <div class="card-num">03 / 09</div>
+        <div class="card-title">The Stakeholders</div>
+        <div class="card-desc">Winners and losers — developers, bondholders, homeowners, Māori.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+      <a class="card" href="safeguards.html">
+        <div class="card-bg">04</div>
+        <div class="card-num">04 / 09</div>
+        <div class="card-title">Democratic Safeguards</div>
+        <div class="card-desc">Six protections removed — consultation, affordability, consent, discretion.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+      <a class="card" href="money-flow.html">
+        <div class="card-bg">05</div>
+        <div class="card-num">05 / 09</div>
+        <div class="card-title">Where Does the Money Go?</div>
+        <div class="card-desc">From every household's power bill to the bondholders' accounts.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+      <a class="card" href="lock-in-timeline.html">
+        <div class="card-bg">06</div>
+        <div class="card-num">06 / 09</div>
+        <div class="card-title">The 30-Year Lock-In</div>
+        <div class="card-desc">No exit mechanism. Asset strands at year 10. Levy runs to year 30.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+      <a class="card" href="power-exposure.html">
+        <div class="card-bg">07</div>
+        <div class="card-num">07 / 09</div>
+        <div class="card-title">Power vs Exposure</div>
+        <div class="card-desc">Those with power bear no risk. Those with no power bear all of it.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+      <a class="card" href="rights-checker.html">
+        <div class="card-bg">08</div>
+        <div class="card-num">08 / 09</div>
+        <div class="card-title">What Can You Do?</div>
+        <div class="card-desc">Eight rights citizens would expect. The Bill removes almost all of them.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+      <a class="card" href="key-messages.html">
+        <div class="card-bg">09</div>
+        <div class="card-num">09 / 09</div>
+        <div class="card-title">Key Messages</div>
+        <div class="card-desc">For homeowners, renters, Māori communities, voters, and advocates.</div>
+        <div class="card-arrow">Open <span>→</span></div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-text">
+      Based on Infrastructure Funding and Financing Act 2020 and Amendment Bill 2025 · NZ Parliamentary documents
+    </span>
+    <a class="footer-begin" href="force-network.html">Begin from Section 01 →</a>
+  </footer>
+
+</body>
+</html>
